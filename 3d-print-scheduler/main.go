@@ -12,16 +12,24 @@ func main() {
 	fmt.Println("Algoritmo: Ordenação Topológica + Detecção de Ciclos")
 	fmt.Println()
 
-	// Montando um exemplo real: peças de um robô simples.
-	// A ordem de impressão importa: a base tem que existir antes das laterais.
+	fmt.Println("--- Cenário 1: grafo válido (DAG) ---")
+	rodarCenarioValido()
+
+	fmt.Println()
+	fmt.Println("--- Cenário 2: grafo com ciclo ---")
+	rodarCenarioComCiclo()
+}
+
+// rodarCenarioValido demonstra a ordenação topológica num grafo sem ciclos.
+func rodarCenarioValido() {
 	g := scheduler.NewDependencyGraph()
 
 	pecas := []*scheduler.PrintPart{
-		{ID: "base",        Name: "Base do Robô",      EstimatedHours: 3.5},
-		{ID: "lateral_esq", Name: "Lateral Esquerda",  EstimatedHours: 2.0},
-		{ID: "lateral_dir", Name: "Lateral Direita",   EstimatedHours: 2.0},
-		{ID: "topo",        Name: "Tampa Superior",     EstimatedHours: 1.5},
-		{ID: "cabeca",      Name: "Cabeça",             EstimatedHours: 4.0},
+		{ID: "base",        Name: "Base do Robô",     EstimatedHours: 3.5},
+		{ID: "lateral_esq", Name: "Lateral Esquerda", EstimatedHours: 2.0},
+		{ID: "lateral_dir", Name: "Lateral Direita",  EstimatedHours: 2.0},
+		{ID: "topo",        Name: "Tampa Superior",   EstimatedHours: 1.5},
+		{ID: "cabeca",      Name: "Cabeça",           EstimatedHours: 4.0},
 	}
 
 	for _, p := range pecas {
@@ -30,8 +38,6 @@ func main() {
 		}
 	}
 
-	// Definindo a ordem de precedência:
-	// base → laterais → topo → cabeça
 	dependencias := [][2]string{
 		{"base", "lateral_esq"},
 		{"base", "lateral_dir"},
@@ -46,25 +52,54 @@ func main() {
 		}
 	}
 
-	// Exibe o grafo construído
-	fmt.Println("Grafo de dependências construído:")
-	for id, part := range g.Parts() {
-		vizinhos := g.Neighbors(id)
-		fmt.Printf("  [%s] %s (%.1fh) → %v\n", id, part.Name, part.EstimatedHours, vizinhos)
-	}
-
-	// Executa a ordenação topológica
 	resultado := g.TopologicalSort()
 	if resultado.Err != nil {
-		fmt.Printf("\n❌ erro: %v\n", resultado.Err)
+		fmt.Printf("❌ erro inesperado: %v\n", resultado.Err)
 		return
 	}
 
-	fmt.Println("\nOrdem de impressão sugerida:")
+	fmt.Println("Ordem de impressão sugerida:")
 	for i, id := range resultado.Order {
 		part := g.Parts()[id]
 		fmt.Printf("  %d. [%s] %s (%.1fh)\n", i+1, id, part.Name, part.EstimatedHours)
 	}
+}
 
-	fmt.Println()
+// rodarCenarioComCiclo demonstra a detecção de dependência circular.
+// cabeça → base cria um ciclo: base → ... → cabeça → base
+func rodarCenarioComCiclo() {
+	g := scheduler.NewDependencyGraph()
+
+	pecas := []*scheduler.PrintPart{
+		{ID: "base",   Name: "Base do Robô", EstimatedHours: 3.5},
+		{ID: "topo",   Name: "Tampa",        EstimatedHours: 1.5},
+		{ID: "cabeca", Name: "Cabeça",       EstimatedHours: 4.0},
+	}
+
+	for _, p := range pecas {
+		if err := g.AddPart(p); err != nil {
+			log.Fatalf("erro ao adicionar peça: %v", err)
+		}
+	}
+
+	// Grafo: base → topo → cabeça → base (ciclo!)
+	dependencias := [][2]string{
+		{"base", "topo"},
+		{"topo", "cabeca"},
+		{"cabeca", "base"}, // esta aresta cria o ciclo
+	}
+
+	for _, dep := range dependencias {
+		if err := g.AddDependency(dep[0], dep[1]); err != nil {
+			log.Fatalf("erro ao adicionar dependência: %v", err)
+		}
+	}
+
+	resultado := g.TopologicalSort()
+	if resultado.Err != nil {
+		fmt.Printf("❌ %v\n", resultado.Err)
+		return
+	}
+
+	fmt.Println("ordenação concluída (não deveria chegar aqui)")
 }
