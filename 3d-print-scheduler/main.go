@@ -53,8 +53,18 @@ func main() {
 		fmt.Printf("  [%s] %s (%.1fh) → %v\n", id, part.Name, part.EstimatedHours, vizinhos)
 	}
 
-	// TODO: chamar g.TopologicalSort() — próximo commit!
-	// TODO: chamar g.DetectCycle() — o ponto alto do trabalho
+	// Executa a ordenação topológica
+	resultado := g.TopologicalSort()
+	if resultado.Err != nil {
+		fmt.Printf("\n❌ erro: %v\n", resultado.Err)
+		return
+	}
+
+	fmt.Println("\nOrdem de impressão sugerida:")
+	for i, id := range resultado.Order {
+		part := g.Parts()[id]
+		fmt.Printf("  %d. [%s] %s (%.1fh)\n", i+1, id, part.Name, part.EstimatedHours)
+	}
+
 	fmt.Println()
-	fmt.Println("próximo passo: implementar TopologicalSort com detecção de ciclos (DFS)")
 }
