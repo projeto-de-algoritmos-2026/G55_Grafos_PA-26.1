@@ -10,7 +10,10 @@
 // significa que encontramos um ciclo — impossível ordenar topologicamente.
 package scheduler
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // cores dos nós durante a DFS
 const (
@@ -30,7 +33,8 @@ type TopoResult struct {
 // Retorna a ordem de impressão das peças ou um erro se houver ciclo.
 func (g *DependencyGraph) TopologicalSort() TopoResult {
 	cor := make(map[string]int)
-	pilha := []string{} // acumula os nós em ordem de finalização
+	pilha := []string{}
+	caminho := []string{} // rastrea o caminho atual da DFS para montar a mensagem de ciclo
 
 	// Inicializa todos os nós como brancos (não visitados)
 	for id := range g.parts {
@@ -40,7 +44,7 @@ func (g *DependencyGraph) TopologicalSort() TopoResult {
 	// Dispara a DFS a partir de cada nó ainda não visitado
 	for id := range g.parts {
 		if cor[id] == branco {
-			if err := g.dfs(id, cor, &pilha); err != nil {
+			if err := g.dfs(id, cor, &pilha, &caminho); err != nil {
 				return TopoResult{Err: err}
 			}
 		}
@@ -57,26 +61,39 @@ func (g *DependencyGraph) TopologicalSort() TopoResult {
 }
 
 // dfs é a busca em profundidade recursiva.
-// Retorna erro imediatamente ao detectar um ciclo.
-func (g *DependencyGraph) dfs(id string, cor map[string]int, pilha *[]string) error {
-	cor[id] = cinza // marca como "em visita"
+// Mantém o slice 'caminho' para reconstruir o ciclo caso ele seja detectado.
+func (g *DependencyGraph) dfs(id string, cor map[string]int, pilha *[]string, caminho *[]string) error {
+	cor[id] = cinza
+	*caminho = append(*caminho, id) // entra no caminho atual
 
 	for _, vizinho := range g.adjacency[id] {
 		if cor[vizinho] == cinza {
-			// Aresta para um nó cinza = ciclo detectado!
+			// Encontrou ciclo — reconstrói o caminho a partir do nó que fecha o loop
+			inicioCiclo := vizinho
+			indiceCiclo := -1
+			for i, no := range *caminho {
+				if no == inicioCiclo {
+					indiceCiclo = i
+					break
+				}
+			}
+
+			// Monta a string "A → B → C → A" mostrando o loop completo
+			trecho := append((*caminho)[indiceCiclo:], inicioCiclo)
 			return fmt.Errorf(
-				"ciclo detectado: '%s' → '%s' cria uma dependência circular impossível de imprimir",
-				id, vizinho,
+				"ciclo detectado: %s — essas peças formam uma dependência circular impossível de imprimir",
+				strings.Join(trecho, " → "),
 			)
 		}
 		if cor[vizinho] == branco {
-			if err := g.dfs(vizinho, cor, pilha); err != nil {
-				return err // propaga o erro ciclo acima na recursão
+			if err := g.dfs(vizinho, cor, pilha, caminho); err != nil {
+				return err
 			}
 		}
 	}
 
-	cor[id] = preto          // marca como completamente processado
-	*pilha = append(*pilha, id) // empilha ao finalizar
+	cor[id] = preto
+	*pilha = append(*pilha, id)
+	*caminho = (*caminho)[:len(*caminho)-1] // sai do caminho atual (backtrack)
 	return nil
 }
