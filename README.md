@@ -1,7 +1,7 @@
 # 3D-Print-Scheduler
 
 Número da Lista: 55<br>
-Conteúdo da Disciplina: Grafos 1<br>
+Conteúdo da Disciplina: Grafos<br>
 
 ## Alunos
 
