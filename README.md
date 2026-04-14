@@ -50,7 +50,7 @@ G55_Grafos_PA-26.1/
 
 > 🎥 A apresentação do projeto está disponível no YouTube:
 
-**[assistir ao vídeo →](https://www.youtube.com/watch?v=LINK_AQUI)**
+**[assistir ao vídeo →](https://youtu.be/0fGjDf0EpJc)**
 
 ## Screenshots
 
