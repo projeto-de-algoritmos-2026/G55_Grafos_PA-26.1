@@ -24,12 +24,20 @@ O **3D Print Scheduler** é um agendador de ordem de impressão 3D baseado em te
 ### Estrutura do projeto
 
 ```
-3d-print-scheduler/
-├── main.go                        # ponto de entrada, dois cenários de demonstração
-└── scheduler/
-    ├── graph.go                   # structs PrintPart e DependencyGraph (lista de adjacência)
-    ├── topological_sort.go        # DFS com coloração de nós e detecção de ciclos
-    └── metrics.go                 # cálculo de tempo total e acumulado por etapa
+G55_Grafos_PA-26.1/
+├── README.md                                  # documentação do projeto
+└── 3d-print-scheduler/
+    ├── go.mod                                 # definição do módulo Go e dependências
+    ├── main.go                                # ponto de entrada: dois cenários de demonstração
+    ├── docs/
+    │   └── screenshots/
+    │       ├── screenshot1.png                # cenário 1: ordenação topológica e tempo acumulado
+    │       ├── screenshot2.png                # cenário 2: ciclo detectado com caminho completo
+    │       └── screenshot3.png                # saída completa do programa
+    └── scheduler/
+        ├── graph.go                           # structs PrintPart e DependencyGraph com lista de adjacência
+        ├── topological_sort.go                # DFS com coloração de nós e detecção de ciclos
+        └── metrics.go                         # cálculo de tempo total e acumulado por etapa
 ```
 
 ### Conceitos aplicados
