@@ -63,6 +63,21 @@ func rodarCenarioValido() {
 		part := g.Parts()[id]
 		fmt.Printf("  %d. [%s] %s (%.1fh)\n", i+1, id, part.Name, part.EstimatedHours)
 	}
+
+	// Calcula e exibe as métricas de tempo da ordem sugerida
+	metrics, err := g.CalculateMetrics(resultado.Order)
+	if err != nil {
+		fmt.Printf("erro ao calcular métricas: %v\n", err)
+		return
+	}
+
+	fmt.Printf("\nTempo total estimado: %.1fh\n", metrics.TotalHours)
+	fmt.Println("Tempo acumulado por etapa:")
+	for i, id := range resultado.Order {
+		part := g.Parts()[id]
+		fmt.Printf("  %d. [%s] %s → acumulado: %.1fh\n",
+			i+1, id, part.Name, metrics.CumulativeMap[id])
+	}
 }
 
 // rodarCenarioComCiclo demonstra a detecção de dependência circular.
